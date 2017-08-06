@@ -1,0 +1,49 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+# Inputs
+
+* Mahlgrad: Mahlgrad Einstellung der Kaffeemühle von 2 - 8
+* Kaffeemenge: In Teeloeffeln von 4 - 6
+* Kochstufe: Einstellung Induktionsherd (5 - P)
+* Extraktionszeit: unkontrollierter Parameter (gemessen von Erster Kaffee bis Stop)
+
+Faktor-Codierung fuer Design:
+```{r}
+
+fac_coding <- list(x1 ~ (mahlgrad - 5)/3, # mahlgrad range: 2 - 8
+                   x2 ~ (kaffeemenge - 5), # Kaffeemenge: 4 - 6 TL
+                   x3 ~ (kochstufe - 7)/3) # Kochstufe 4 - P
+
+
+```
+
+
+## Design 1: Response-Surface design
+
+```{r}
+library(rsm)
+
+rsm::cube(zeit + vol + intens + bitter + geschmack + gesamt ~ x1+x2+x3, 
+          coding = fac_coding,
+          n0 = 3) -> cube1
+rsm::star(alpha = "faces", n0 = 0) -> star_points
+
+djoin(cube1, star_points) -> plan
+plan
+
+```
+
+Write design plan to excel file
+```{r}
+Sys.setenv("R_ZIPCMD" = "C://Rtools/bin/zip.exe")
+rsm::decode.data(plan)
+openxlsx::write.xlsx(decode.data(plan), file = "design_plan.xlsx")
+openxlsx::addStyle()
+```
+
+# Auswertung
+
+....
